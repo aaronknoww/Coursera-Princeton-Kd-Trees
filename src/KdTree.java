@@ -100,11 +100,55 @@ public class KdTree
 
         
     }
+    
     // does the set contain point p?               
-    // public boolean contains(Point2D p)
-    // {
-    //     return points.contains(p);
-    // }
+    public boolean contains(Point2D p)
+    {
+        if(root == null)
+            return false; //Because the tree is empty.
+        
+        Node2d auxP = root;
+        
+        do
+        {
+            if(auxP.point.compareTo(p) == 0) // TODO: revisar si hace bien la comparacion. que x == x2 y == y2
+                return true;
+            
+            if(auxP.isVertical)
+            {
+                if(p.x() < auxP.point.x())
+                {
+                    if(auxP.left == null)
+                        return false;
+                    auxP = auxP.left;                                              
+                }
+                else
+                {
+                    if(auxP.right == null)
+                        return false;
+                    auxP = auxP.right;
+                }
+            }    
+            else
+            {
+                if( p.y() < auxP.point.y())
+                {
+                    if(auxP.left == null)
+                        return false;
+                    auxP = auxP.left;  
+                }
+                else
+                { 
+                    if(auxP.right == null)
+                        return false;
+                    auxP = auxP.right;
+
+                }
+
+            }
+        } 
+        while (true);
+    }
     // draw all points to standard draw 
     public void draw()
     {
@@ -311,9 +355,14 @@ public class KdTree
         arbol.insert(new Point2D(0.7, 0.2));
         arbol.insert(new Point2D(0.5, 0.4));
         arbol.insert(new Point2D(0.2, 0.3));
+        // arbol.insert(new Point2D(0.2, 0.1));
+        // arbol.insert(new Point2D(0.2, 0.0));
         arbol.insert(new Point2D(0.4, 0.7));
         arbol.insert(new Point2D(0.9, 0.6));
+        arbol.insert(new Point2D(0.6, 0.4));
         arbol.draw();
+        
+        arbol.contains(new Point2D(.6, .4));
 
 
     }
