@@ -1,12 +1,19 @@
+import org.w3c.dom.Node;
+import org.w3c.dom.css.Rect;
+
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.SET;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class KdTree
 {
     private Node2d root;
     private int counter;
+    private SET<Point2D> pointsRec;
+        
     // construct an empty set of points 
     public KdTree()
     {   counter = 0;    
@@ -156,16 +163,114 @@ public class KdTree
     
     }
     // // all points that are inside the rectangle (or on the boundary)                         
-    // public Iterable<Point2D> range(RectHV rect)
-    // {
-    //     SET<Point2D> pointsRec = new SET<Point2D>();
-    //     for (Point2D point2d : points)
-    //     {
-    //         if(rect.contains(point2d))
-    //             pointsRec.add(point2d);            
-    //     }
-    //     return pointsRec;
-    // } 
+    public Iterable<Point2D> range(RectHV rect)
+    {
+        pointsRec = new SET<Point2D>();
+        
+        if(this.isEmpty())
+            return pointsRec;
+        
+        StdDraw.setPenColor(StdDraw.GREEN);
+        rect.draw();
+        Stack<Node2d> stkNodes =  new Stack<Node2d>(); // To search whithin right child.
+        Node2d auxP = root;
+
+        while (true)
+        {
+            if(auxP.isVertical)
+            {
+                if((rect.xmin()<= auxP.point.x()) && (rect.xmax() >= auxP.point.x()))
+                {
+                    // Enter here because it is necessary to search within right child.
+
+                    if(rect.contains(auxP.point))
+                        pointsRec.add(auxP.point);
+                    
+                    if(auxP.right != null)
+                        stkNodes.push(auxP); //TODO: VER SI GUARDA BIEN EL NODO
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if(auxP.left == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop(); // TODO: VER PORQUE NO ME DEJA LEER EL NODO GUARDADO.
+
+                }
+                else if(rect.xmin()<= auxP.point.x())
+                {
+                    if(rect.contains(auxP.point))
+                        pointsRec.add(auxP.point);
+                    
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if(auxP.left == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop();                    
+                }
+                else
+                {
+                    if(rect.contains(auxP.point))
+                    pointsRec.add(auxP.point);
+                
+                    if(auxP.right != null)
+                        auxP = auxP.right;
+                    else if(auxP.right == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop();     
+                }
+            }
+            else
+            {
+                if((rect.ymin()<= auxP.point.y()) && (rect.ymax() >= auxP.point.y()))
+                {
+                    // Enter here because it is necessary to search within right child.
+
+                    if(rect.contains(auxP.point))
+                        pointsRec.add(auxP.point);
+                    
+                    if(auxP.right != null)
+                        stkNodes.push(auxP); 
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if(auxP.left == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop();
+                }
+                else if(rect.ymin()<= auxP.point.y())
+                {
+                    if(rect.contains(auxP.point))
+                        pointsRec.add(auxP.point);
+                    
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if(auxP.left == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop();                    
+                }
+                else
+                {
+                    if(rect.contains(auxP.point))
+                    pointsRec.add(auxP.point);
+                
+                    if(auxP.right != null)
+                        auxP = auxP.right;
+                    else if(auxP.right == null && stkNodes.isEmpty())
+                        return pointsRec;
+                    else
+                        auxP = stkNodes.pop();     
+                }
+
+                
+            }
+            
+        }
+        
+      
+    } 
     // // a nearest neighbor in the set to point p; null if the set is empty 
     // public Point2D nearest(Point2D p)
     // {
@@ -294,10 +399,7 @@ public class KdTree
                     }
                     else
                         StdDraw.line(next.point.x(), next.point.y(), next.point.x(), grandFather.point.y()); //To conect with his grandfather.
-
                 }
-
-
             }    
             else
             {
@@ -334,17 +436,12 @@ public class KdTree
                 }
             }
         }
-    
-   
+       
         _drawPoint(next.left);
-        _drawPoint(next.right);
+        _drawPoint(next.right);       
         
-        //TODO: 1 EJECUTAR PRIMERO EL PROGRAMA YA QUE SE ENCUENTRA CORRIENDO Y VER QUE SE DIBUJE BIEN LAS LINEAS Y        
-        
-        
-     
     }
-    public static void main(String[] args)
+       public static void main(String[] args)
     {
         KdTree arbol = new KdTree();
         
@@ -361,7 +458,7 @@ public class KdTree
         arbol.insert(new Point2D(0.9, 0.6));
         arbol.insert(new Point2D(0.6, 0.4));
         arbol.draw();
-        
+        arbol.range(new RectHV(.2, .8, .4, .9));
         arbol.contains(new Point2D(.6, .4));
 
 
