@@ -1,7 +1,4 @@
-import org.w3c.dom.Node;
-import org.w3c.dom.css.Rect;
 
-import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.SET;
@@ -107,7 +104,6 @@ public class KdTree
 
         
     }
-    
     // does the set contain point p?               
     public boolean contains(Point2D p)
     {
@@ -187,13 +183,13 @@ public class KdTree
                         pointsRec.add(auxP.point);
                     
                     if(auxP.right != null)
-                        stkNodes.push(auxP); //TODO: VER SI GUARDA BIEN EL NODO
+                        stkNodes.push(auxP.right); 
                     if(auxP.left != null)
                         auxP = auxP.left;
                     else if(auxP.left == null && stkNodes.isEmpty())
                         return pointsRec;
                     else
-                        auxP = stkNodes.pop(); // TODO: VER PORQUE NO ME DEJA LEER EL NODO GUARDADO.
+                        auxP = stkNodes.pop(); 
 
                 }
                 else if(rect.xmin()<= auxP.point.x())
@@ -211,7 +207,7 @@ public class KdTree
                 else
                 {
                     if(rect.contains(auxP.point))
-                    pointsRec.add(auxP.point);
+                        pointsRec.add(auxP.point);
                 
                     if(auxP.right != null)
                         auxP = auxP.right;
@@ -222,16 +218,15 @@ public class KdTree
                 }
             }
             else
-            {
+            {   // is horizontal
                 if((rect.ymin()<= auxP.point.y()) && (rect.ymax() >= auxP.point.y()))
                 {
                     // Enter here because it is necessary to search within right child.
-
                     if(rect.contains(auxP.point))
                         pointsRec.add(auxP.point);
                     
                     if(auxP.right != null)
-                        stkNodes.push(auxP); 
+                        stkNodes.push(auxP.right); 
                     if(auxP.left != null)
                         auxP = auxP.left;
                     else if(auxP.left == null && stkNodes.isEmpty())
@@ -254,7 +249,7 @@ public class KdTree
                 else
                 {
                     if(rect.contains(auxP.point))
-                    pointsRec.add(auxP.point);
+                        pointsRec.add(auxP.point);
                 
                     if(auxP.right != null)
                         auxP = auxP.right;
@@ -262,14 +257,9 @@ public class KdTree
                         return pointsRec;
                     else
                         auxP = stkNodes.pop();     
-                }
-
-                
-            }
-            
+                }                
+            }            
         }
-        
-      
     } 
     // // a nearest neighbor in the set to point p; null if the set is empty 
     // public Point2D nearest(Point2D p)
@@ -353,12 +343,10 @@ public class KdTree
         if(next==null)
             return;
         
-        
-        
         if(next == root)
         {
             StdDraw.setPenColor(StdDraw.BOOK_RED);
-            StdDraw.setPenRadius(0.02); 
+            StdDraw.setPenRadius(0.013); 
             next.point.draw();
             StdDraw.setPenRadius(0.005); 
             StdDraw.line(next.point.x(), 0.0, next.point.x(), 1.0); //Because it is the first line it must draw from coordinate y = 0.0 to y = 1.0 pass for the same coordinate x.
@@ -366,10 +354,9 @@ public class KdTree
         }
         else
         {
-
             if(next.isVertical)
             {
-                StdDraw.setPenRadius(0.02); 
+                StdDraw.setPenRadius(0.013); 
                 StdDraw.setPenColor(StdDraw.BOOK_RED);
                 next.point.draw();
                 StdDraw.setPenRadius(0.005);
@@ -403,7 +390,7 @@ public class KdTree
             }    
             else
             {
-                StdDraw.setPenRadius(0.02); 
+                StdDraw.setPenRadius(0.013); 
                 StdDraw.setPenColor(StdDraw.BOOK_BLUE);
                 next.point.draw();
                 StdDraw.setPenRadius(0.005);
@@ -458,9 +445,8 @@ public class KdTree
         arbol.insert(new Point2D(0.9, 0.6));
         arbol.insert(new Point2D(0.6, 0.4));
         arbol.draw();
-        arbol.range(new RectHV(.2, .8, .4, .9));
+        var prueba = arbol.range(new RectHV(.1, .1, .3, .9));
         arbol.contains(new Point2D(.6, .4));
-
 
     }
 }
