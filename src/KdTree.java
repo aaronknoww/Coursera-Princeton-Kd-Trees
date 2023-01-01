@@ -1,4 +1,6 @@
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.SET;
@@ -51,7 +53,7 @@ public class KdTree
                     //Take left child;
                     if(aux.left == null)
                     {
-                        connectNode(aux, new Node2d(p,false), true);
+                        _connectNode(aux, new Node2d(p,false), true);
                         counter++;
 
                         return;
@@ -62,7 +64,7 @@ public class KdTree
                 {
                     if(aux.right == null)
                     {
-                        connectNode(aux, new Node2d(p,false), false);
+                        _connectNode(aux, new Node2d(p,false), false);
                         counter++;                        
                         return;
                     }
@@ -79,7 +81,7 @@ public class KdTree
                     // Take left child;
                     if (aux.left == null)
                     {
-                        connectNode(aux, new Node2d(p,true), true);
+                        _connectNode(aux, new Node2d(p,true), true);
                         counter++;                        
                         return;
                     }
@@ -89,7 +91,7 @@ public class KdTree
                 {
                     if (aux.right == null)
                     {
-                        connectNode(aux, new Node2d(p, true), false);
+                        _connectNode(aux, new Node2d(p, true), false);
                         counter++;                        
                         return;
                     }
@@ -261,27 +263,134 @@ public class KdTree
             }            
         }
     } 
-    // // a nearest neighbor in the set to point p; null if the set is empty 
-    // public Point2D nearest(Point2D p)
-    // {
-    //     if(points.isEmpty())
-    //         return null;
-    //     Point2D near = new Point2D(0, 0);
-    //     //double distance = p.distanceTo(points.max());
-    //     double distance = Double.POSITIVE_INFINITY;
-    //     double dAux;
+    // a nearest neighbor in the set to point p; null if the set is empty 
+    public Point2D nearest(Point2D p)
+    {
+        if(root == null)
+            return null;
 
-    //     for (Point2D point2d : points)
-    //     {
-    //         dAux = p.distanceTo(point2d); 
-    //         if( dAux < distance)
-    //         {
-    //             near = point2d;
-    //             distance = dAux;
-    //         }
-    //     }
-    //     return near;
-    // }
+        Node2d auxP = root;
+        Point2D near = new Point2D(0, 0); //-------> To store a current near point.
+        double disToPoint = Double.POSITIVE_INFINITY;//-> To store the distance between the query point and the current point stored within the Kd tree.
+        double disToLineFather = 0.0; //----------------> To store distance nearest point of the father line.
+        double disNear;//-------------------------------> To store the distance the nearest point to the query point. 
+        
+        Stack<Node2d> stkNodes =  new Stack<Node2d>();//  To search whithin right child.
+
+        StdDraw.setPenColor(StdDraw.GREEN);
+        p.draw();
+        
+        near = auxP.point;
+        disNear = p.distanceTo(auxP.point);
+
+        while(true)
+        {
+            if(auxP.isVertical)
+            {
+                // To check the X coordinate.
+                if(auxP.point.x() > p.x())
+                {
+                    //Move to left child;
+                    
+                    disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
+                    disToPoint = p.distanceTo(auxP.point);
+                    if(disToPoint < disNear)
+                    { 
+                        near = auxP.point;
+                        disNear = disToPoint;
+                    }
+                    if((disToLineFather < disToPoint) && (auxP.right != null))
+                        stkNodes.push(auxP.right); // Exist the possibility of finding the nearest point in this son.
+
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if( !stkNodes.isEmpty())
+                    {
+                        auxP = stkNodes.pop();
+                    }
+                    else
+                        return near; 
+                }
+                else
+                {
+                    // Move to right child
+
+                    disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
+                    disToPoint = p.distanceTo(auxP.point);
+                    if(disToPoint < disNear)
+                    { 
+                        near = auxP.point;
+                        disNear = disToPoint;
+                    }
+
+                    if((disToLineFather < disToPoint) && (auxP.left != null))
+                        stkNodes.push(auxP.left);
+
+                    if(auxP.right != null)
+                        auxP = auxP.right;
+                    else if( !stkNodes.isEmpty())
+                    {
+                        auxP = stkNodes.pop();
+                    }
+                    else
+                        return near; 
+                }
+                
+            }
+            else // is horizontal
+            {
+                    // To check the Y coordinate.
+                if (auxP.point.y() > p.y())
+                {
+                    //Move to left child;
+
+                    disToLineFather = p.distanceTo(new Point2D(p.x(), auxP.point.y()));
+                    disToPoint = p.distanceTo(auxP.point);
+                    if(disToPoint < disNear)
+                    { 
+                        near = auxP.point;
+                        disNear = disToPoint;
+                    }
+                    if((disToLineFather < disToPoint) && (auxP.right != null))
+                        stkNodes.push(auxP.right); // Exist the possibility of finding the nearest point in this son.
+
+                    if(auxP.left != null)
+                        auxP = auxP.left;
+                    else if( !stkNodes.isEmpty())
+                    {
+                        auxP = stkNodes.pop();
+                    }
+                    else
+                        return near; 
+                } 
+                else
+                {
+                    // Move to right child
+
+                    disToLineFather = p.distanceTo(new Point2D(p.x(), auxP.point.y()));
+                    disToPoint = p.distanceTo(auxP.point);
+                    if(disToPoint < disNear)
+                    { 
+                        near = auxP.point;
+                        disNear = disToPoint;
+                    }
+
+                    if((disToLineFather < disToPoint) && (auxP.left != null))
+                        stkNodes.push(auxP.left);
+
+                    if(auxP.right != null)
+                        auxP = auxP.right;
+                    else if( !stkNodes.isEmpty())
+                    {
+                        auxP = stkNodes.pop();
+                    }
+                    else
+                        return near; 
+
+                }
+            }
+        }
+    }
 
 
     private class Node2d
@@ -309,7 +418,7 @@ public class KdTree
         }
     }
 
-    private void connectNode(Node2d nFather, Node2d child, boolean sideLeft) // To connect a node to its father
+    private void    _connectNode(Node2d nFather, Node2d child, boolean sideLeft) // To connect a node to its father
     {
         // sideLeft--> If this is true, this node must connect in the left child, otherwise in the right child.
 
@@ -325,7 +434,7 @@ public class KdTree
         }
 
     }
-    private Node2d getGrandFather(Node2d son)
+    private Node2d  _getGrandFather(Node2d son)
     {
         Node2d grand = son.father;
         
@@ -338,7 +447,7 @@ public class KdTree
         }
         return grand;
     }
-    private void _drawPoint(Node2d next)
+    private void    _drawPoint(Node2d next)
     {
         if(next==null)
             return;
@@ -366,7 +475,7 @@ public class KdTree
                     // It means that the line goes downwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is above of the current point.
 
-                    Node2d grandFather = getGrandFather(next);
+                    Node2d grandFather = _getGrandFather(next);
                     if(grandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 1.0); //To conect with the border y 1.0
@@ -379,7 +488,7 @@ public class KdTree
                     // It means that the line goes upwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is below of the current point.
 
-                    Node2d grandFather = getGrandFather(next);
+                    Node2d grandFather = _getGrandFather(next);
                     if(grandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 0.0); //To conect with the border y 1.0
@@ -400,7 +509,7 @@ public class KdTree
                     // It means that the line goes rightwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is in the left of the current point.
 
-                    Node2d grandFather = getGrandFather(next);
+                    Node2d grandFather = _getGrandFather(next);
                     if(grandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), 0.0, next.point.y()); //To conect with the border x 0.0
@@ -413,7 +522,7 @@ public class KdTree
                     // It means that the line goes upwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is below of the current point.
                 
-                    Node2d grandFather = getGrandFather(next);
+                    Node2d grandFather = _getGrandFather(next);
                     if(grandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), 1.0, next.point.y()); //To conect with the border x 1.0
@@ -427,6 +536,23 @@ public class KdTree
         _drawPoint(next.left);
         _drawPoint(next.right);       
         
+    }
+    private boolean _checkNode(Node2d node, double disNear)
+    {
+        double disToLineFather = 0;
+        
+        if (node.isVertical)
+        {
+            //Because this node is vertical his father is horizontal.
+            disToLineFather = node.point.distanceTo(new Point2D(node.point.x(), node.father.point.y()));
+            return (disToLineFather <= disNear) ? true : false;
+        }
+        else
+        {
+            //Because this node is horizontal his father is vertical.
+            disToLineFather = node.point.distanceTo(new Point2D(node.father.point.x(), node.point.y()));
+            return (disToLineFather <= disNear) ? true : false;
+        }
     }
        public static void main(String[] args)
     {
@@ -447,6 +573,9 @@ public class KdTree
         arbol.draw();
         var prueba = arbol.range(new RectHV(.1, .1, .3, .9));
         arbol.contains(new Point2D(.6, .4));
+        Point2D p = new Point2D(.6, .3);
+        arbol.nearest(p);
+        int a = 0;
 
     }
 }
