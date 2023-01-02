@@ -268,8 +268,11 @@ public class KdTree
     {
         if(root == null)
             return null;
+        if(this.size() == 1)
+            return root.point;
 
         Node2d auxP = root;
+        Node2d nearP = root;
         Point2D near = new Point2D(0, 0); //-------> To store a current near point.
         double disToPoint = Double.POSITIVE_INFINITY;//-> To store the distance between the query point and the current point stored within the Kd tree.
         double disToLineFather = 0.0; //----------------> To store distance nearest point of the father line.
@@ -280,28 +283,35 @@ public class KdTree
         StdDraw.setPenColor(StdDraw.GREEN);
         p.draw();
         
-        near = auxP.point;
+        nearP = auxP;
         disNear = p.distanceTo(auxP.point);
+
+        if(auxP.point.x() > p.x() && auxP.left != null)
+            auxP = auxP.left;
+        else
+            auxP = auxP.right;
 
         while(true)
         {
             if(auxP.isVertical)
             {
                 // To check the X coordinate.
-                if(auxP.point.x() > p.x())
+                
+                if(p.x() < auxP.point.x())
                 {
                     //Move to left child;
                     
-                    disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
+                    //disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
                     disToPoint = p.distanceTo(auxP.point);
                     if(disToPoint < disNear)
                     { 
-                        near = auxP.point;
+                        nearP = auxP;
                         disNear = disToPoint;
                     }
-                    if((disToLineFather < disToPoint) && (auxP.right != null))
-                        stkNodes.push(auxP.right); // Exist the possibility of finding the nearest point in this son.
-
+                    if(auxP.right != null)
+                    {                        
+                        stkNodes.push(auxP);
+                    }
                     if(auxP.left != null)
                         auxP = auxP.left;
                     else if( !stkNodes.isEmpty())
@@ -309,23 +319,19 @@ public class KdTree
                         auxP = stkNodes.pop();
                     }
                     else
-                        return near; 
+                        break; 
                 }
                 else
                 {
                     // Move to right child
 
-                    disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
+                    //xdisToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
                     disToPoint = p.distanceTo(auxP.point);
                     if(disToPoint < disNear)
                     { 
                         near = auxP.point;
                         disNear = disToPoint;
                     }
-
-                    if((disToLineFather < disToPoint) && (auxP.left != null))
-                        stkNodes.push(auxP.left);
-
                     if(auxP.right != null)
                         auxP = auxP.right;
                     else if( !stkNodes.isEmpty())
@@ -333,7 +339,7 @@ public class KdTree
                         auxP = stkNodes.pop();
                     }
                     else
-                        return near; 
+                        break; 
                 }
                 
             }
@@ -343,17 +349,15 @@ public class KdTree
                 if (auxP.point.y() > p.y())
                 {
                     //Move to left child;
-
-                    disToLineFather = p.distanceTo(new Point2D(p.x(), auxP.point.y()));
+                    
                     disToPoint = p.distanceTo(auxP.point);
                     if(disToPoint < disNear)
                     { 
                         near = auxP.point;
                         disNear = disToPoint;
-                    }
-                    if((disToLineFather < disToPoint) && (auxP.right != null))
+                    }                    
+                    if(auxP.right != null)
                         stkNodes.push(auxP.right); // Exist the possibility of finding the nearest point in this son.
-
                     if(auxP.left != null)
                         auxP = auxP.left;
                     else if( !stkNodes.isEmpty())
@@ -361,23 +365,18 @@ public class KdTree
                         auxP = stkNodes.pop();
                     }
                     else
-                        return near; 
+                        break; 
                 } 
                 else
                 {
                     // Move to right child
-
-                    disToLineFather = p.distanceTo(new Point2D(p.x(), auxP.point.y()));
+                    
                     disToPoint = p.distanceTo(auxP.point);
                     if(disToPoint < disNear)
                     { 
                         near = auxP.point;
                         disNear = disToPoint;
-                    }
-
-                    if((disToLineFather < disToPoint) && (auxP.left != null))
-                        stkNodes.push(auxP.left);
-
+                    }                    
                     if(auxP.right != null)
                         auxP = auxP.right;
                     else if( !stkNodes.isEmpty())
@@ -385,11 +384,15 @@ public class KdTree
                         auxP = stkNodes.pop();
                     }
                     else
-                        return near; 
+                        break; 
 
                 }
             }
         }
+     
+        if(disNear > p.distanceTo(new Point2D(root.point.x(), p.y())))
+            auxP = root.right;
+        return nearP.point;
     }
 
 
@@ -570,6 +573,7 @@ public class KdTree
         arbol.insert(new Point2D(0.4, 0.7));
         arbol.insert(new Point2D(0.9, 0.6));
         arbol.insert(new Point2D(0.6, 0.4));
+        arbol.insert(new Point2D(0.3, 0.5));
         arbol.draw();
         var prueba = arbol.range(new RectHV(.1, .1, .3, .9));
         arbol.contains(new Point2D(.6, .4));
