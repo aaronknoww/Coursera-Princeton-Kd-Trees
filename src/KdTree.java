@@ -277,7 +277,7 @@ public class KdTree
         double disToPoint = Double.POSITIVE_INFINITY;//-> To store the distance between the query point and the current point stored within the Kd tree.
         double disToLineFather = 0.0; //----------------> To store distance nearest point of the father line.
         double disNear;//-------------------------------> To store the distance the nearest point to the query point. 
-        
+        boolean left = true;
         Stack<Node2d> stkNodes =  new Stack<Node2d>();//  To search whithin right child.
 
         StdDraw.setPenColor(StdDraw.GREEN);
@@ -287,109 +287,123 @@ public class KdTree
         disNear = p.distanceTo(auxP.point);
 
         if(auxP.point.x() > p.x() && auxP.left != null)
-            auxP = auxP.left;
-        else
-            auxP = auxP.right;
-
-        while(true)
         {
-            if(auxP.isVertical)
-            {
-                // To check the X coordinate.
-                
-                if(p.x() < auxP.point.x())
-                {
-                    //Move to left child;
-                    
-                    //disToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
-                    disToPoint = p.distanceTo(auxP.point);
-                    if(disToPoint < disNear)
-                    { 
-                        nearP = auxP;
-                        disNear = disToPoint;
-                    }
-                    if(auxP.right != null)
-                    {                        
-                        stkNodes.push(auxP);
-                    }
-                    if(auxP.left != null)
-                        auxP = auxP.left;
-                    else if( !stkNodes.isEmpty())
-                    {
-                        auxP = stkNodes.pop();
-                    }
-                    else
-                        break; 
-                }
-                else
-                {
-                    // Move to right child
+            auxP = auxP.left;
+            left = true;
 
-                    //xdisToLineFather = p.distanceTo(new Point2D(auxP.point.x(), p.y()));
-                    disToPoint = p.distanceTo(auxP.point);
-                    if(disToPoint < disNear)
-                    { 
-                        near = auxP.point;
-                        disNear = disToPoint;
-                    }
-                    if(auxP.right != null)
-                        auxP = auxP.right;
-                    else if( !stkNodes.isEmpty())
-                    {
-                        auxP = stkNodes.pop();
-                    }
-                    else
-                        break; 
-                }
-                
-            }
-            else // is horizontal
-            {
-                    // To check the Y coordinate.
-                if (auxP.point.y() > p.y())
-                {
-                    //Move to left child;
-                    
-                    disToPoint = p.distanceTo(auxP.point);
-                    if(disToPoint < disNear)
-                    { 
-                        near = auxP.point;
-                        disNear = disToPoint;
-                    }                    
-                    if(auxP.right != null)
-                        stkNodes.push(auxP.right); // Exist the possibility of finding the nearest point in this son.
-                    if(auxP.left != null)
-                        auxP = auxP.left;
-                    else if( !stkNodes.isEmpty())
-                    {
-                        auxP = stkNodes.pop();
-                    }
-                    else
-                        break; 
-                } 
-                else
-                {
-                    // Move to right child
-                    
-                    disToPoint = p.distanceTo(auxP.point);
-                    if(disToPoint < disNear)
-                    { 
-                        near = auxP.point;
-                        disNear = disToPoint;
-                    }                    
-                    if(auxP.right != null)
-                        auxP = auxP.right;
-                    else if( !stkNodes.isEmpty())
-                    {
-                        auxP = stkNodes.pop();
-                    }
-                    else
-                        break; 
-
-                }
-            }
         }
+        else
+        {
+            auxP = auxP.right;
+            left = false;
+        }
+        
+        nearP = _checkSideTree(auxP, p, disNear);
+
+        // while(true)
+        // {   
+        //     if(auxP.isVertical)
+        //     {
+        //         // To check the X coordinate.
+        //         disToPoint = p.distanceTo(auxP.point);
+        //         if(disToPoint < disNear)
+        //         { 
+        //             nearP = auxP;
+        //             disNear = disToPoint;
+        //         }
+    
+        //         if(p.x() > auxP.point.x())//To know if the query point is to the left of the father node.
+        //         {
+        //             // The query point is to the left of the father node.
+
+        //             if ( ( (p.x() + disNear) >= auxP.point.x() ) && (auxP.left != null) )
+        //             {
+        //                 stkNodes.push(auxP.right);
+        //                 auxP = auxP.left;                        
+        //             }
+        //             else if ( (p.x() + disNear) >= auxP.point.x() )
+        //                 auxP = auxP.right;
+        //             else if (auxP.left != null)
+        //                 auxP = auxP.left;
+        //             else if ( !stkNodes.isEmpty() )
+        //                 auxP = stkNodes.pop();
+        //             else
+        //                 break;    
+
+        //         }
+        //         else
+        //         {
+        //             // The query point is to the right of the father node.
+
+        //             if ( ( (p.x() - disNear) <= auxP.point.x() ) && (auxP.right != null) )
+        //             {
+        //                 stkNodes.push(auxP.left);
+        //                 auxP = auxP.right;                        
+        //             }
+        //             else if ( (p.x() - disNear) <= auxP.point.x() )
+        //                 auxP = auxP.left;
+        //             else if (auxP.right != null)
+        //                 auxP = auxP.right;
+        //             else if ( !stkNodes.isEmpty() )
+        //                 auxP = stkNodes.pop();
+        //             else
+        //                 break;    
+        //         }                
+        //     }
+        //     else // is horizontal
+        //     {
+        //             // To check the Y coordinate.
+                
+        //             disToPoint = p.distanceTo(auxP.point);
+        //             if(disToPoint < disNear)
+        //             { 
+        //                 nearP = auxP;
+        //                 disNear = disToPoint;
+        //             }
+        
+        //             if(p.y() < auxP.point.y())//To know if the query point is to the left of the father node.
+        //             {
+        //                 // The query point is below of the father node.
+    
+        //                 if ( ( (p.y() + disNear) >= auxP.point.y() ) && (auxP.left != null) )
+        //                 {
+        //                     stkNodes.push(auxP.right);
+        //                     auxP = auxP.left;                        
+        //                 }
+        //                 else if ( (p.y() + disNear) >= auxP.point.y() )
+        //                     auxP = auxP.right;
+        //                 else if (auxP.left != null)
+        //                     auxP = auxP.left;
+        //                 else if ( !stkNodes.isEmpty() )
+        //                     auxP = stkNodes.pop();
+        //                 else
+        //                     break;    
+    
+        //             }
+        //             else
+        //             {
+        //                 // The query point is above of the father node.
+    
+        //                 if ( ( (p.y() - disNear) <= auxP.point.y() ) && (auxP.right != null) )
+        //                 {
+        //                     stkNodes.push(auxP.left);
+        //                     auxP = auxP.right;                        
+        //                 }
+        //                 else if ( (p.y() - disNear) <= auxP.point.y() )
+        //                     auxP = auxP.left;
+        //                 else if (auxP.right != null)
+        //                     auxP = auxP.right;
+        //                 else if ( !stkNodes.isEmpty() )
+        //                     auxP = stkNodes.pop();
+        //                 else
+        //                     break;    
+        //             }
+                
+        //     }
+        // }
      
+        //TODO: DEPURAR LA FUNCION CHEKSIDETREE
+        //TODO: VER COMO SE VA A MANDAR LLAMAR LA MISMA FUNCION DESPUES DE LA PRIMERA EJECUCION.
         if(disNear > p.distanceTo(new Point2D(root.point.x(), p.y())))
             auxP = root.right;
         return nearP.point;
@@ -540,23 +554,113 @@ public class KdTree
         _drawPoint(next.right);       
         
     }
-    private boolean _checkNode(Node2d node, double disNear)
-    {
-        double disToLineFather = 0;
+    private Node2d _checkSideTree(Node2d auxP, Point2D p, double disNear)
+    {     
+        Node2d nearP = root;
+        double disToPoint = Double.POSITIVE_INFINITY;//-> To store the distance between the query point and the current point stored within the Kd tree.
+        Stack<Node2d> stkNodes =  new Stack<Node2d>();//  To search whithin right child.
+
+        while(true)
+        {   
+            if(auxP.isVertical)
+            {
+                // To check the X coordinate.
+                disToPoint = p.distanceTo(auxP.point);
+                if(disToPoint < disNear)
+                { 
+                    nearP = auxP;
+                    disNear = disToPoint;
+                }
+    
+                if(p.x() > auxP.point.x())//To know if the query point is to the left of the father node.
+                {
+                    // The query point is to the left of the father node.
+
+                    if ( ( (p.x() + disNear) >= auxP.point.x() ) && (auxP.left != null) )
+                    {
+                        stkNodes.push(auxP.right);
+                        auxP = auxP.left;                        
+                    }
+                    else if ( (p.x() + disNear) >= auxP.point.x() )
+                        auxP = auxP.right;
+                    else if (auxP.left != null)
+                        auxP = auxP.left;
+                    else if ( !stkNodes.isEmpty() )
+                        auxP = stkNodes.pop();
+                    else
+                        return nearP;    
+
+                }
+                else
+                {
+                    // The query point is to the right of the father node.
+
+                    if ( ( (p.x() - disNear) <= auxP.point.x() ) && (auxP.right != null) )
+                    {
+                        stkNodes.push(auxP.left);
+                        auxP = auxP.right;                        
+                    }
+                    else if ( (p.x() - disNear) <= auxP.point.x() )
+                        auxP = auxP.left;
+                    else if (auxP.right != null)
+                        auxP = auxP.right;
+                    else if ( !stkNodes.isEmpty() )
+                        auxP = stkNodes.pop();
+                    else
+                        return nearP;
+                }                
+            }
+            else // is horizontal
+            {
+                // To check the Y coordinate.
+
+                disToPoint = p.distanceTo(auxP.point);
+                if (disToPoint < disNear)
+                {
+                    nearP = auxP;
+                    disNear = disToPoint;
+                }
+
+                if (p.y() < auxP.point.y())// To know if the query point is to the left of the father node.
+                {
+                    // The query point is below of the father node.
+
+                    if (((p.y() + disNear) >= auxP.point.y()) && (auxP.left != null)) {
+                        stkNodes.push(auxP.right);
+                        auxP = auxP.left;
+                    } else if ((p.y() + disNear) >= auxP.point.y())
+                        auxP = auxP.right;
+                    else if (auxP.left != null)
+                        auxP = auxP.left;
+                    else if (!stkNodes.isEmpty())
+                        auxP = stkNodes.pop();
+                    else
+                        return nearP;
+
+                }
+                else
+                {
+                    // The query point is above of the father node.
+
+                    if (((p.y() - disNear) <= auxP.point.y()) && (auxP.right != null)) {
+                        stkNodes.push(auxP.left);
+                        auxP = auxP.right;
+                    } else if ((p.y() - disNear) <= auxP.point.y())
+                        auxP = auxP.left;
+                    else if (auxP.right != null)
+                        auxP = auxP.right;
+                    else if (!stkNodes.isEmpty())
+                        auxP = stkNodes.pop();
+                    else
+                        return nearP;
+                }
+
+            }
+        }
+    
         
-        if (node.isVertical)
-        {
-            //Because this node is vertical his father is horizontal.
-            disToLineFather = node.point.distanceTo(new Point2D(node.point.x(), node.father.point.y()));
-            return (disToLineFather <= disNear) ? true : false;
-        }
-        else
-        {
-            //Because this node is horizontal his father is vertical.
-            disToLineFather = node.point.distanceTo(new Point2D(node.father.point.x(), node.point.y()));
-            return (disToLineFather <= disNear) ? true : false;
-        }
     }
+
        public static void main(String[] args)
     {
         KdTree arbol = new KdTree();
