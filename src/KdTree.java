@@ -275,7 +275,7 @@ public class KdTree
         Node2d nearP = root;
         Point2D near = new Point2D(0, 0); //-------> To store a current near point.
         double disToPoint = Double.POSITIVE_INFINITY;//-> To store the distance between the query point and the current point stored within the Kd tree.
-        double disToLineFather = 0.0; //----------------> To store distance nearest point of the father line.
+        double disToLineRoot = 0.0; //----------------> To store distance nearest point of the father line.
         double disNear;//-------------------------------> To store the distance the nearest point to the query point. 
         boolean left = true;
         Stack<Node2d> stkNodes =  new Stack<Node2d>();//  To search whithin right child.
@@ -299,6 +299,8 @@ public class KdTree
         }
         
         nearP = _checkSideTree(auxP, p, disNear);
+        disNear = p.distanceTo(nearP.point);
+        disToLineRoot = p.distanceTo(new Point2D(root.point.x(), p.y()));
 
         // while(true)
         // {   
@@ -402,11 +404,23 @@ public class KdTree
         //     }
         // }
      
-        //TODO: DEPURAR LA FUNCION CHEKSIDETREE
-        //TODO: VER COMO SE VA A MANDAR LLAMAR LA MISMA FUNCION DESPUES DE LA PRIMERA EJECUCION.
-        if(disNear > p.distanceTo(new Point2D(root.point.x(), p.y())))
-            auxP = root.right;
-        return nearP.point;
+        //TODO: DEPURAR LA FUNCION CHEKSIDETREE la parte izquierda ya funciona bien.
+        //TODO: AJUSTAR CUANDO SALGA DE REVISAR LA PARTE CONTRARIA DEL ARBOL, PARA VER QUE VALOR SE DEBE DE RETORNAR.
+        
+        if(disNear >= disToLineRoot && left ) // Because of the way of inserting nodes into the tree is necessary to check the right son differently than the left son.
+        {
+            auxP = auxP.right;
+            _checkSideTree(auxP, p, disNear);
+            return nearP.point;
+        }
+        else if (disNear > disToLineRoot && left == false)
+        {
+            auxP = auxP.left;
+            _checkSideTree(auxP, p, disNear);
+            return nearP.point;
+        }
+        else
+            return nearP.point;
     }
 
 
@@ -572,7 +586,7 @@ public class KdTree
                     disNear = disToPoint;
                 }
     
-                if(p.x() > auxP.point.x())//To know if the query point is to the left of the father node.
+                if(p.x() <= auxP.point.x())//To know if the query point is to the left of the father node.
                 {
                     // The query point is to the left of the father node.
 
@@ -581,7 +595,7 @@ public class KdTree
                         stkNodes.push(auxP.right);
                         auxP = auxP.left;                        
                     }
-                    else if ( (p.x() + disNear) >= auxP.point.x() )
+                    else if ( ((p.x() + disNear) >= auxP.point.x()) && (auxP.right != null) )
                         auxP = auxP.right;
                     else if (auxP.left != null)
                         auxP = auxP.left;
@@ -595,12 +609,12 @@ public class KdTree
                 {
                     // The query point is to the right of the father node.
 
-                    if ( ( (p.x() - disNear) <= auxP.point.x() ) && (auxP.right != null) )
+                    if ( ( (p.x() - disNear) < auxP.point.x() ) && (auxP.right != null) )
                     {
                         stkNodes.push(auxP.left);
                         auxP = auxP.right;                        
                     }
-                    else if ( (p.x() - disNear) <= auxP.point.x() )
+                    else if ( ((p.x() - disNear) <= auxP.point.x()) && (auxP.left != null) )
                         auxP = auxP.left;
                     else if (auxP.right != null)
                         auxP = auxP.right;
@@ -628,7 +642,7 @@ public class KdTree
                     if (((p.y() + disNear) >= auxP.point.y()) && (auxP.left != null)) {
                         stkNodes.push(auxP.right);
                         auxP = auxP.left;
-                    } else if ((p.y() + disNear) >= auxP.point.y())
+                    } else if ((p.y() + disNear) >= auxP.point.y() && auxP.right != null )
                         auxP = auxP.right;
                     else if (auxP.left != null)
                         auxP = auxP.left;
@@ -656,8 +670,7 @@ public class KdTree
                 }
 
             }
-        }
-    
+        }    
         
     }
 
