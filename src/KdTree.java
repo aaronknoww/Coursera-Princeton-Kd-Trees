@@ -296,10 +296,7 @@ public class KdTree
         nearP = _checkSideTree(auxP, p, disNear);
         disNear = p.distanceTo(nearP.point);
         disToLineRoot = p.distanceTo(new Point2D(root.point.x(), p.y()));
-        
-        //TODO: DEPURAR LA FUNCION CHEKSIDETREE la parte izquierda ya funciona bien.
-        //TODO: AJUSTAR CUANDO SALGA DE REVISAR LA PARTE CONTRARIA DEL ARBOL, PARA VER QUE VALOR SE DEBE DE RETORNAR.
-        
+                        
         if(disNear >= disToLineRoot && left ) // Because of the way of inserting nodes into the tree is necessary to check the right son differently than the left son.
         {
             auxP = root.right;
@@ -362,16 +359,16 @@ public class KdTree
     }
     private Node2d  _getGrandFather(Node2d son)
     {
-        Node2d grand = son.father;
+        Node2d greatGrand = son.father;
         
         for (int i = 0; i < 2; i++)
         {
-            if(grand==null)
+            if(greatGrand==null)
                 return null;
-            grand = grand.father;
+            greatGrand = greatGrand.father;
             
         }
-        return grand;
+        return greatGrand;
     }
     private void    _drawPoint(Node2d next)
     {
@@ -380,9 +377,10 @@ public class KdTree
         
         if(next == root)
         {
-            StdDraw.setPenColor(StdDraw.BOOK_RED);
+            StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.setPenRadius(0.013); 
             next.point.draw();
+            StdDraw.setPenColor(StdDraw.BOOK_RED);
             StdDraw.setPenRadius(0.005); 
             StdDraw.line(next.point.x(), 0.0, next.point.x(), 1.0); //Because it is the first line it must draw from coordinate y = 0.0 to y = 1.0 pass for the same coordinate x.
 
@@ -391,43 +389,57 @@ public class KdTree
         {
             if(next.isVertical)
             {
+                StdDraw.setPenColor(StdDraw.BLACK);
                 StdDraw.setPenRadius(0.013); 
-                StdDraw.setPenColor(StdDraw.BOOK_RED);
                 next.point.draw();
+                StdDraw.setPenColor(StdDraw.BOOK_RED);
                 StdDraw.setPenRadius(0.005);
                 StdDraw.line(next.point.x(), next.point.y(), next.point.x(), next.father.point.y()); // Draw line from next.point to father's y coordinate.
-                if(next.father.point.y() < next.point.y())
+                if(next.father.point.y() <= next.point.y())
                 {
                     // It means that the line goes downwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is above of the current point.
 
-                    Node2d grandFather = _getGrandFather(next);
-                    if(grandFather == null)
+                    Node2d greatGrandFather = _getGrandFather(next);
+                    if(greatGrandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 1.0); //To conect with the border y 1.0
                     }
                     else
-                        StdDraw.line(next.point.x(), next.point.y(), next.point.x(), grandFather.point.y()); //To conect with his grandfather.
+                    {
+                        if(greatGrandFather.point.y()<= next.father.point.y())// The greatGrandFather is down to the father.
+                            StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 1.0); //To conect with the border y 1.0
+                        else
+                            StdDraw.line(next.point.x(), next.point.y(), next.point.x(), greatGrandFather.point.y()); //To conect with his grandfather. the point is between his father and his GGfather.
+                    }
+                        
                 }
                 else
                 {
                     // It means that the line goes upwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is below of the current point.
 
-                    Node2d grandFather = _getGrandFather(next);
-                    if(grandFather == null)
+                    Node2d greatGrandFather = _getGrandFather(next);
+                    if(greatGrandFather == null)
                     {
-                        StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 0.0); //To conect with the border y 1.0
+                        StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 0.0); //To conect with the border y 0.0
                     }
                     else
-                        StdDraw.line(next.point.x(), next.point.y(), next.point.x(), grandFather.point.y()); //To conect with his grandfather.
+                    {
+                        if(greatGrandFather.point.y()>= next.father.point.y())// The greatGrandFather is righ to the father.
+                            StdDraw.line(next.point.x(), next.point.y(), next.point.x(), 0.0); //To conect with the border y 0.0
+                        else
+                            StdDraw.line(next.point.x(), next.point.y(), next.point.x(), greatGrandFather.point.y()); //To conect with his great grand father.
+
+                    }   
                 }
             }    
             else
             {
+                StdDraw.setPenColor(StdDraw.BLACK);
                 StdDraw.setPenRadius(0.013); 
-                StdDraw.setPenColor(StdDraw.BOOK_BLUE);
                 next.point.draw();
+                StdDraw.setPenColor(StdDraw.BOOK_BLUE);
                 StdDraw.setPenRadius(0.005);
                 StdDraw.line(next.point.x(), next.point.y(), next.father.point.x(), next.point.y()); // Draw line from next.point to father's x coordinate.
                 if(next.father.point.x() > next.point.x())
@@ -435,26 +447,39 @@ public class KdTree
                     // It means that the line goes rightwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is in the left of the current point.
 
-                    Node2d grandFather = _getGrandFather(next);
-                    if(grandFather == null)
+                    Node2d greatGrandFather = _getGrandFather(next); // Three levels up in the kdtree,
+                    if(greatGrandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), 0.0, next.point.y()); //To conect with the border x 0.0
                     }
                     else
-                        StdDraw.line(next.point.x(), next.point.y(), grandFather.point.x(), next.point.y()); //To conect with his grandfather.
+                    {
+                        if(greatGrandFather.point.x()>= next.father.point.x())// The greatGrandFather is righ to the father.
+                            StdDraw.line(next.point.x(), next.point.y(), 0.0, next.point.y()); //To conect with the border x 0.0
+                        else
+                            StdDraw.line(next.point.x(), next.point.y(), greatGrandFather.point.x(), next.point.y()); //To conect with his grandfather. the point is between his father and his GGfather.
+                    }
                 }
                 else
                 {
-                    // It means that the line goes upwards from this point to his father point.
+                    // It means that the line goes leftwards from this point to his father point.
                     // Because of that is necessary to know if his grandfather point is below of the current point.
                 
-                    Node2d grandFather = _getGrandFather(next);
-                    if(grandFather == null)
+                    Node2d greatGrandFather = _getGrandFather(next);
+                    if(greatGrandFather == null)
                     {
                         StdDraw.line(next.point.x(), next.point.y(), 1.0, next.point.y()); //To conect with the border x 1.0
                     }
                     else
-                        StdDraw.line(next.point.x(), next.point.y(), grandFather.point.x(), next.point.y()); // To conect with his grandfather.
+                    {
+                        if(greatGrandFather.point.x()<= next.father.point.x())// The greatGrandFather is left to the father.
+                            StdDraw.line(next.point.x(), next.point.y(), 1.0, next.point.y()); //To conect with the border x 1.0
+                        else
+                            StdDraw.line(next.point.x(), next.point.y(), greatGrandFather.point.x(), next.point.y()); //To conect with his grandfather. the point is between his father and his GGfather.
+                            
+
+                    }
+                        
                 }
             }
         }
@@ -573,31 +598,30 @@ public class KdTree
     {
         KdTree arbol = new KdTree();
         
-        // arbol.insert(new Point2D(0.5, 0.5));
-        // arbol.insert(new Point2D(0.25, 0.5));
-        // arbol.insert(new Point2D(0.47, 0.77));
-
         arbol.insert(new Point2D(0.7, 0.2));
+        
+        arbol.insert(new Point2D(0.5, 0.5));
+        arbol.insert(new Point2D(0.25, 0.5));
+        arbol.insert(new Point2D(0.47, 0.77));
+
         arbol.insert(new Point2D(0.5, 0.4));
         arbol.insert(new Point2D(0.2, 0.3));
-        // arbol.insert(new Point2D(0.2, 0.1));
-        // arbol.insert(new Point2D(0.2, 0.0));
+        arbol.insert(new Point2D(0.2, 0.1));
+        arbol.insert(new Point2D(0.2, 0.0));
         arbol.insert(new Point2D(0.4, 0.7));
         arbol.insert(new Point2D(0.9, 0.6));
-        arbol.insert(new Point2D(0.6, 0.4));
-        arbol.draw();
-        arbol.insert(new Point2D(0.3, 0.5)); // TODO: FALTA VER PORQUE SE DIBUJA MAL ESTA LINEA.
-        arbol.draw();
+        arbol.insert(new Point2D(0.6, 0.4));        
+        arbol.insert(new Point2D(0.3, 0.5)); 
         arbol.insert(new Point2D(0.81, 0.385));
-        var prueba = arbol.range(new RectHV(.1, .1, .3, .9));
+        arbol.insert(new Point2D(0.4, 0.35));
+        arbol.draw();
+      //  var prueba = arbol.range(new RectHV(.1, .1, .3, .9));
         arbol.contains(new Point2D(.6, .4));
         // Point2D p = new Point2D(.6, .3); depurado y funciona bien, busca primero izq y luego der, p 
         // Point2D p = new Point2D(.685, .385); depurado y funiciona bien. el punto del lado derecho es el mas cercano.
         // Point2D p = new Point2D(.85, .7); punto mas cercano del lado derecho.
         // Point2D p = new Point2D(.95, .25);
-        Point2D p = new Point2D(.1, .1);
-        var punt = arbol.nearest(p);
-        int a = 0;
+        // Point2D p = new Point2D(.1, .1);   
 
     }
 }
